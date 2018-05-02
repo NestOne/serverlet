@@ -186,6 +186,18 @@ public class HtmlGenerator {
 
         iniMap.append(aplyStyle);
 
+        String applyFillPattern = "\tol.render.canvas.Replay.prototype.applyFill = function (state, geometry) {      \n" +
+                "      var fillStyle = state.fillStyle;\n" +
+                "      var fillInstruction = [ol.render.canvas.Instruction.SET_FILL_STYLE, fillStyle];\n" +
+                "      if (typeof fillStyle !== 'string') {\n" +
+                "        var viewExtent = map.getView().getProjection().getExtent();\n" +
+                "        fillInstruction.push([viewExtent[0], viewExtent[3]]);\n" +
+                "      }\n" +
+                "      this.instructions.push(fillInstruction);\n" +
+                "    };\n";
+
+        iniMap.append(applyFillPattern);
+
 //        将iniMap字符串替换到olbase.html页面中
         olbaseContent = olbaseContent.replace(REPLACEKEY,iniMap.toString());
         String indexFile = folder+"/index.html";
