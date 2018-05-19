@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <title>openlayers compare with mapbox</title>
+  <link rel="stylesheet" href="./dist/ol.css" type="text/css">
+  <script src="./dist/ol-debug.js"></script>
+  <script src="./dist/olms.js"></script>
+  <script src="./dist/mapbox-gl.js"></script>
+  <link href='./dist/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map1 {
+      margin: 0;
+      width: 49.5%;
+      height: 100%;
+      float: left;
+      border-style: groove;
+    }
+
+    #map2 {
+      width: 49.5%;
+      border-style: groove;
+      height: 100%;
+      float: right;
+    }
+  </style>
+</head>
+
+<body>
+<div id="map1"></div>
+<div id="map2"></div>
+<script>
+    //公用参数start
+    <!--inserjscode-->
+    //公用参数end
+
+    var windowH = window.document.documentElement.clientHeight;
+    document.getElementById("map2").style.height = windowH + "px";
+    document.getElementById("map1").style.height = windowH + "px";
+
+    var proj = ol.proj.get('EPSG:3857');
+    var extent = proj.getExtent();
+    var ress = [78271.5169640203, 39135.75848201015, 19567.879241005074, 9783.939620502537, 4891.969810251268,
+      2445.984905125634, 1222.992452562817, 611.4962262814086, 305.7481131407043, 152.87405657035214,
+      76.43702828517607, 38.218514142588035, 19.109257071294017, 9.554628535647009, 4.777314267823504,
+      2.388657133911752, 1.194328566955876
+    ]
+    var scaleLineControl = new ol.control.ScaleLine();
+    var view = new ol.View({
+      center: center,
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      zoom: zoom,
+      projection: proj,
+      resolutions: ress
+    });
+    var map1 = new ol.Map({
+      controls: ol.control.defaults({
+        attributionOptions: {
+          collapsible: false
+        }
+      }).extend([
+        scaleLineControl
+      ]),
+      target: 'map1',
+      view: view
+    });
+
+    var format = new ol.format.MVT({
+      featureClass: ol.Feature
+    });
+    var mvtLayer = new ol.layer.VectorTile({
+      source: new ol.source.VectorTile({
+        format: format,
+        url: '/tiles/{z}/{x}/{y}.mvt',
+        projection: proj,
+        tileGrid: new ol.tilegrid.TileGrid({
+          resolutions: ress,
+          origin: [extent[0], extent[3]],
+          tileSize: 512
+        })
+      }),
+      declutter: true,
+      opacity: 1
+    });
+    var root = window.location.href;
+
+
+    root = root.substring(0, root.lastIndexOf("/") + 1);
+    fetch('styles/style.json').then(function (response) {
+      response.json().then(function (glStyle) {
+        olms.applyStyle(mvtLayer, glStyle, sourceName, '', ress).then(function () {
+          map1.addLayer(mvtLayer);
+
+          // 修改style,sprite, glyphs为绝对路径
+          var target = root + glStyle.sources[sourceName].tiles[0];
+
+          glStyle.sources[sourceName].tiles[0] = target;
+
+          glStyle.sprite = root + glStyle.sprite;
+          glStyle.glyphs = root + glStyle.glyphs;
+
+          mapboxgl.accessToken =
+            'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
+          map2 = new mapboxgl.Map({
+            container: 'map2', // container id
+            style: glStyle,
+            center: ol.proj.toLonLat(center),
+            zoom: zoom,
+            minZoom: minZoom,
+            maxZoom: maxZoom
+          });
+
+          var nav = new mapboxgl.NavigationControl();
+          map2.addControl(nav, 'top-left');
+          var sca = new mapboxgl.ScaleControl({ maxWith: 80, unit: 'imperial' });
+          map2.addControl(sca);
+
+          var byol = false;
+          map1.on('moveend', function (e) {
+            byol = true;
+            var newRes = e.target.getView().getZoom();
+            var newCenter = e.target.getView().getCenter();
+            console.log('map1 moved' + newCenter + "," + newRes);
+
+            map2.setZoom(newRes);
+            map2.panTo(ol.proj.toLonLat(newCenter));
+
+            byol = false;
+          })
+          map2.on('moveend', function (e) {
+            var zoom = e.target.getZoom();
+            zoom = Math.round(zoom);
+            var center = ol.proj.fromLonLat([e.target.getCenter().lng, e.target.getCenter().lat]);
+            if (!byol) {
+              map1.getView().animate({
+                zoom: zoom
+              }, {
+                  center: center
+                });
+            }
+            console.log('map2 moved' + center + "," + zoom);
+
+
+          })
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

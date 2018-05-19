@@ -51265,7 +51265,9 @@ ol.format.MVT.prototype.createFeature_ = function(pbf, rawFeature, opt_options) 
       for (var i = 0, ii = ends.length; i < ii; ++i) {
         var end = ends[i];
         if (!ol.geom.flat.orient.linearRingIsClockwise(flatCoordinates, offset, end, 2)) {
-          endss.push(ends.slice(prevEndIndex, i));
+          // TODO: delete i
+          // endss.push(ends.slice(prevEndIndex, i));
+          endss.push(ends.slice(prevEndIndex));
           prevEndIndex = i;
         }
         offset = end;

@@ -146,7 +146,9 @@ public class HtmlGenerator {
         iniMap.append("        projection: proj,\n");
         iniMap.append("        resolutions: ress\n");
         iniMap.append("        })\n");
-        iniMap.append("      });\n\n");
+        iniMap.append("      });\n");
+        iniMap.append("    olExtends(map);\n\n");
+
 
         String createLayer = "    var mvtLayer = new ol.layer.VectorTile({\n" +
                 "      source: new ol.source.VectorTile({\n" +
@@ -161,7 +163,8 @@ public class HtmlGenerator {
                 "      }),\n" +
                 "      declutter:true,\n" +
                 "      opacity: 1\n" +
-                "    });\n";
+                "    });\n"+
+                "    mvtLayer.setFastRender(true);\n";
         iniMap.append(createLayer);
 
         String aplyStyle = "    fetch('styles/style.json').then(function (response) {\n" +
@@ -243,6 +246,21 @@ public class HtmlGenerator {
             if(!new File(mbglFile).exists()){
                 OutputStreamWriter writer  = new OutputStreamWriter(new FileOutputStream(mbglFile),"UTF-8");
                 writer.write(mbglContent);
+                writer.close();
+            }
+
+//            生成compare文件
+            String compareContent = readLines("comparebase.html");
+            String comparejs = "    var center = ["+11580051.812533+", " +3587835.432713+"];\n" +
+                    "    var zoom = "+zoom+";\n" +
+                    "    var minZoom ="+ minZoom+";\n" +
+                    "    var maxZoom = "+maxZoom+";\n" +
+                    "    var sourceName = '"+cacheName+"';";
+            compareContent = compareContent.replace(REPLACEKEY,comparejs);
+            String compareFile = folder+ "/compare.html";
+            if(!new File(compareFile).exists()){
+                OutputStreamWriter writer  = new OutputStreamWriter(new FileOutputStream(compareFile),"UTF-8");
+                writer.write(compareContent);
                 writer.close();
             }
         }
