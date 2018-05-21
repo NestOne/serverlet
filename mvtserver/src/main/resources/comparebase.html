@@ -8,6 +8,7 @@
   <script src="./dist/olms.js"></script>
   <script src="./dist/mapbox-gl.js"></script>
   <link href='./dist/mapbox-gl.css' rel='stylesheet' />
+  <script src="./dist/olextends.js"></script>
   <style>
     html,
     body {
@@ -71,6 +72,7 @@
       target: 'map1',
       view: view
     });
+    olExtends(map1);
 
     var format = new ol.format.MVT({
       featureClass: ol.Feature
@@ -89,6 +91,7 @@
       declutter: true,
       opacity: 1
     });
+    mvtLayer.setFastRender(true);
     var root = window.location.href;
 
 

@@ -251,7 +251,7 @@ public class HtmlGenerator {
 
 //            生成compare文件
             String compareContent = readLines("comparebase.html");
-            String comparejs = "    var center = ["+11580051.812533+", " +3587835.432713+"];\n" +
+            String comparejs = "    var center = ["+centerX+", " +centerY+"];\n" +
                     "    var zoom = "+zoom+";\n" +
                     "    var minZoom ="+ minZoom+";\n" +
                     "    var maxZoom = "+maxZoom+";\n" +
