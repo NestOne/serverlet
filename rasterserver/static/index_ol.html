@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>经纬度数据验证</title>
+    <script src="./js/ol-debug.js"></script>
+    <style>
+        html,
+        body,
+        #map {
+            font-family: sans-serif;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <script>
+        var proj = ol.proj.get('EPSG:4326');
+        var scaleLineControl = new ol.control.ScaleLine();
+        var map = new ol.Map({
+            controls: ol.control.defaults({
+                attributionOptions: {
+                    collapsible: false
+                }
+            }).extend([
+                scaleLineControl
+            ]),
+            target: 'map',
+            view: new ol.View({
+                center: [116, 36],
+                minZoom: 0,
+                maxZoom: 13,
+                zoom: 5,
+                projection: proj
+            })
+        });
+
+        var tian_di_tu_annotation = new ol.layer.Tile({
+            title: "天地图文字标注",
+            source: new ol.source.XYZ({
+                url: 'http://t3.tianditu.com/DataServer?T=cva_c&x={x}&y={y}&l={z}',
+                projection: proj
+            })
+        });
+
+        var tian_di_tu_ImageAnnotation = new ol.layer.Tile({
+            title: "天地影像标注",
+            source: new ol.source.XYZ({
+                url: 'http://t3.tianditu.com/DataServer?T=cia_c&x={x}&y={y}&l={z}',
+                projection: proj
+            })
+        });
+        var tian_di_tu_vector = new ol.layer.Tile({
+            title: "天地图矢量地图",
+            source: new ol.source.XYZ({
+                url: 'http://t3.tianditu.com/DataServer?T=vec_c&x={x}&y={y}&l={z}',
+                projection: proj
+            })
+        });
+
+        map.addLayer(tian_di_tu_vector);
+        map.addLayer(tian_di_tu_annotation);
+       
+        // 添加栅格图层
+        var layerGT = new ol.layer.Tile({
+            title:"Geotrellis Layer",
+            source: new ol.source.XYZ({
+                url:'../4490/{z}/{x}/{-y}',
+                projection:proj
+            })
+        });
+        map.addLayer(layerGT);
+
+        // 添加网格
+         map.addLayer(
+            new ol.layer.Tile({
+              //瓦片网格数据源, 显示的内容为 levev，x(column), y（row), -(y+1)为实际的瓦片值  
+              source: new ol.source.TileDebug({
+                //投影  
+                projection: proj,
+                //获取瓦片网格信息  
+                tileGrid: layerGT.getSource().getTileGrid(),
+                wrapX: true
+              })
+            }));
+
+    </script>
+</body>
+
+</html>

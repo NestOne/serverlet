@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>经纬度数据验证</title>
+    <script src="./js/ol-debug.js"></script>
+    <style>
+        html,
+        body,
+        #map {
+            font-family: sans-serif;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <script>
+        var proj = ol.proj.get('EPSG:3857');
+        var scaleLineControl = new ol.control.ScaleLine();
+        var map = new ol.Map({
+            controls: ol.control.defaults({
+                attributionOptions: {
+                    collapsible: false
+                }
+            }).extend([
+                scaleLineControl
+            ]),
+            target: 'map',
+            view: new ol.View({
+                center: [0, 0],
+                minZoom: 0,
+                maxZoom: 13,
+                zoom: 5,
+                projection: proj
+            })
+        });
+
+        var osmLayer = new ol.layer.Tile({
+            source: new ol.source.OSM()
+        });
+
+        map.addLayer(osmLayer);
+
+        // 添加栅格图层
+        var layerGT = new ol.layer.Tile({
+            title: "Geotrellis Layer",
+            source: new ol.source.XYZ({
+                url: '../beijingDEM/{z}/{x}/{y}',
+                projection: proj
+            }),
+            opacity: 0.5
+        });
+        map.addLayer(layerGT);
+        // 添加网格
+        map.addLayer(
+            new ol.layer.Tile({
+              //瓦片网格数据源, 显示的内容为 levev，x(column), y（row), -(y+1)为实际的瓦片值  
+              source: new ol.source.TileDebug({
+                //投影  
+                projection: proj,
+                //获取瓦片网格信息  
+                tileGrid: layerGT.getSource().getTileGrid(),
+                wrapX: false
+              })
+            }));
+
+    </script>
+</body>
+
+</html>

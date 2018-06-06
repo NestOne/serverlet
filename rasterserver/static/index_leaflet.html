@@ -1,0 +1,48 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+<link rel="stylesheet" href="leaflet.css" />
+<script src="leaflet.js"></script>
+<style type="text/css">
+body, #map {
+  height: 100%;
+}
+</style>
+</head>
+<body>
+<div id="map">
+</div>
+<script type="text/javascript">
+  //create the tile layers
+  var base = new L.tileLayer("http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png");
+  var dem = new L.tileLayer("../dem/{z}/{x}/{y}", {maxNativeZoom: 11, maxZoom: 14});
+  var slope = new L.tileLayer("../slope/{z}/{x}/{y}", {maxNativeZoom: 11, maxZoom: 14});
+  var SlopeRealTime = new L.tileLayer("../slopeRealTime/{z}/{x}/{y}", {maxNativeZoom: 11, maxZoom: 14});
+  var mathCon = new L.tileLayer("../mathCon/{z}/{x}/{y}", {maxNativeZoom: 11, maxZoom: 14});
+  var clip = new L.tileLayer("../clip/{z}/{x}/{y}", {maxNativeZoom: 11, maxZoom: 14});
+  var beijingDEM = new L.tileLayer("../beijingDEM/{z}/{x}/{y}", {maxNativeZoom: 13, maxZoom: 14});
+  var beijingReclass = new L.tileLayer("../beijingReclass/{z}/{x}/{y}", {maxNativeZoom: 13, maxZoom: 14});
+  var hainanImage = new L.tileLayer("../hainan/{z}/{x}/{y}", {maxNativeZoom: 13, maxZoom: 14});
+  var hainanF = new L.tileLayer("../hainanF/{z}/{x}/{y}", {maxNativeZoom: 13, maxZoom: 14});
+  //link leaflet map with html
+  var map = L.map('map');
+  map.setView([30, 113], 4);
+  //create an overlay object
+  var overlayMaps = {
+    "DEM": dem,
+    "Slope": slope,
+	"Math_Con": mathCon,
+	"ClipedDEM": clip,
+	"Slope(RealTime)": SlopeRealTime,
+	"BeijingDEM": beijingDEM,
+	"BeijingReclass": beijingReclass,
+	"hainan": hainanImage
+  };
+  //add the layers to the map
+  L.control.layers(overlayMaps, {}, {collapsed: false}).addTo(map);
+  //base.addTo(map);
+  //hainanF.addTo(map);
+  //overlayMaps.DEM.addTo(map);
+</script>
+</body>
+</html>
