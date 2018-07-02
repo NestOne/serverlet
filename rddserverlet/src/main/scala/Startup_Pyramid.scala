@@ -1,7 +1,6 @@
 import java.net.URI
 
-import com.supermap.bdt.mapping.{DLayerPyramidData, DMap}
-import com.supermap.mapping.LayerSettingVector
+import com.supermap.bdt.mapping.{ DMap}
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder}
 
@@ -28,14 +27,14 @@ object Startup_Pyramid {
       val originalUri = args(0)
       val pyramidUri = args(1)
 
-      val layerdata = DLayerPyramidData.loadPyramidLayerData(dMap.m_sparkContext, originalUri, pyramidUri)
-
-      if (args.length == 3) {
-        dMap.addDLayerViaTemplate(layerdata, 0, args(2))
-      }else{
-        val layerSetting = new LayerSettingVector()
-        dMap.addDLayer(layerdata, 0, "Test", layerSetting)
-      }
+//      val layerdata = DLayerPyramidData.loadPyramidLayerData(dMap.m_sparkContext, originalUri, pyramidUri)
+//
+//      if (args.length == 3) {
+//        dMap.addDLayerViaTemplate(layerdata, 0, args(2))
+//      }else{
+//        val layerSetting = new LayerSettingVector()
+//        dMap.addDLayer(layerdata, 0, "Test", layerSetting)
+//      }
 
       println("end buildhdfsIndex.(ms)", System.currentTimeMillis() - dStart)
       context.addServlet(new ServletHolder(new RDDHdfsServerlet(dMap)), "/image.png");
