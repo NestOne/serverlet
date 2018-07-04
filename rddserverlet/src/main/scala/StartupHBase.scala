@@ -40,7 +40,7 @@ object StartupHBase {
           println("need arg 'epsg' like -epsg=3857")
           return
         }else{
-          argDic("typeName")
+          argDic("epsg")
         }
 
       val htmlPath =
@@ -66,12 +66,10 @@ object StartupHBase {
           null
         }
 
-      //"DLTB_1_2w"//args(1)
-     // val htmlPath= "F:\\nanning\\nanning_3857\\DLTB_2w_Double@nanning\\index.html"//args(2)
-
       println("start open hbase datastore")
 
       val hBaseRender = new HBaseFeatureRender(tableName, typeName, zookeeper = zookeeper, epsg = epsg.toInt)
+      hBaseRender.initialize()
 
       println("open hbase datastore cost " + (System.currentTimeMillis() - start) + "ms")
 
