@@ -5,16 +5,23 @@ import com.supermap.data.Unit;
 import com.supermap.data.processing.CacheWriter;
 import com.supermap.data.processing.StorageType;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
 
 
 public class Startup {
@@ -33,7 +40,6 @@ public class Startup {
 
         }
         Server server = new Server(port);
-
 
         File sciFile = new File(sciPath);
         if(!sciFile.exists()){
@@ -92,6 +98,7 @@ public class Startup {
         resource_handler.setDirectoriesListed(true);
         resource_handler.setResourceBase(sciFolder);
 
+
         if(sciInfos.getStorageType() == StorageType.MongoDB){
             String[] mongoInfos = sciInfos.getMongoConnectionInfo();
             MongodbHandler.Init(mongoInfos[0],mongoInfos[1],mongoInfos[2],sciInfos.getVersionSetting(),sclaeCatpions);
@@ -99,7 +106,7 @@ public class Startup {
         }else if(sciInfos.getStorageType() == StorageType.Compact){
             handlers.setHandlers(new Handler[] { new cfFileHandler(sciFolder),resource_handler,new DefaultHandler() });
         }else {
-            handlers.setHandlers(new Handler[] { resource_handler,new DefaultHandler() });
+            handlers.setHandlers(new Handler[] { new EanbleCORSHandler(),resource_handler,new DefaultHandler() });
         }
         server.setHandler(handlers);
 
@@ -115,4 +122,28 @@ public class Startup {
 
     }
 
+//    private static void enableCORS(final String origin, final String methods, final String headers) {
+//        Server server = new Server(9091);
+//        options("*", (request, response) -> {
+//            String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+//            if (accessControlRequestHeaders != null) {
+//                response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
+//            }
+//
+//            String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+//
+//            if (accessControlRequestMethod != null) {
+//                response.header("Access-Control-Allow-Methods",
+//                        accessControlRequestMethod);
+//            }
+//
+//            return "OK";
+//        });
+//
+//        before((request, response) -> {
+//            response.header("Access-Control-Allow-Origin", origin);
+//            response.header("Access-Control-Request-Method", methods);
+//            response.header("Access-Control-Allow-Headers", headers);
+//        });
+//    }
 }

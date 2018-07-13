@@ -94,6 +94,7 @@ public class MongodbHandler extends AbstractHandler {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 //        从MongoDB中读取出对应的数据, 根据文件的目录判断数据的类型，然后用不同的方式来处理
+        response.setHeader("Access-Control-Allow-Origin", "*");
         byte[] result = null;
         if(target.endsWith(".mvt")){
 //            处理瓦片
