@@ -126,80 +126,12 @@ public class HtmlGenerator {
                     String.format("        extent:[%f,%f,%f,%f]\n",indexbounds[0],indexbounds[1],indexbounds[2],indexbounds[3]) +
                     "      });\n");
         }
-        iniMap.append("    var extent=proj.getExtent();\n");
-        iniMap.append("    var ress="+ressbuffer.toString()+"\n");
-        iniMap.append("    var scaleLineControl = new ol.control.ScaleLine();\n" +
-                "    var map = new ol.Map({\n" +
-                "      controls: ol.control.defaults({\n" +
-                "          attributionOptions: {\n" +
-                "            collapsible: false\n" +
-                "          }\n" +
-                "        }).extend([\n" +
-                "          scaleLineControl\n" +
-                "        ]),\n");
-        iniMap.append("      target: 'map',\n");
-        iniMap.append("      view: new ol.View({\n");
-        iniMap.append(String.format("        center: [%f, %f],\n", centerX, centerY));
-        iniMap.append(String.format("        minZoom:%d,\n", minZoom));
-        iniMap.append(String.format("        maxZoom:%d,\n", maxZoom));
-        iniMap.append(String.format("        zoom: %d,\n", zoom));
-        iniMap.append("        projection: proj,\n");
-        iniMap.append("        resolutions: ress\n");
-        iniMap.append("        })\n");
-        iniMap.append("      });\n");
-        iniMap.append("    olExtends(map);\n\n");
-
-
-        String createLayer = "    var mvtLayer = new ol.layer.VectorTile({\n" +
-                "      source: new ol.source.VectorTile({\n" +
-                "        format: new ol.format.MVT,\n" +
-                "        url: '/tiles/{z}/{x}/{y}.mvt',\n" +
-                "        projection: proj,\n" +
-                "        tileGrid: new ol.tilegrid.TileGrid({\n" +
-                "          resolutions: ress,\n" +
-                "          origin: [extent[0],extent[3]],\n" +
-                "          tileSize: "+tileSize+"\n" +
-                "        })        \n" +
-                "      }),\n" +
-                "      declutter:true,\n" +
-                "      opacity: 1\n" +
-                "    });\n"+
-                "    mvtLayer.setFastRender(true);\n";
-        iniMap.append(createLayer);
-
-        String aplyStyle = "    fetch('styles/style.json').then(function (response) {\n" +
-                "      response.json().then(function (glStyle) {\n" +
-                "      olms.applyBackground(map,glStyle);\n"+
-                "        olms.applyStyle(mvtLayer, glStyle, '" + cacheName+"','',ress).then(function () {\n" +
-                "          map.addLayer(mvtLayer);\n" +
-                "          // map.addLayer(\n" +
-                "          //   new ol.layer.Tile({\n" +
-                "          //     //瓦片网格数据源, 显示的内容为 levev，x(column), y（row), -(y+1)为实际的瓦片值  \n" +
-                "          //     source: new ol.source.TileDebug({\n" +
-                "          //       //投影  \n" +
-                "          //       projection: proj,\n" +
-                "          //       //获取瓦片网格信息  \n" +
-                "          //       tileGrid: mvtLayer.getSource().getTileGrid(),\n" +
-                "          //       wrapX: true\n" +
-                "          //     })\n" +
-                "          //   }));\n" +
-                "        });\n" +
-                "      });\n" +
-                "    });\n";
-
-        iniMap.append(aplyStyle);
-
-        String applyFillPattern = "\tol.render.canvas.Replay.prototype.applyFill = function (state, geometry) {      \n" +
-                "      var fillStyle = state.fillStyle;\n" +
-                "      var fillInstruction = [ol.render.canvas.Instruction.SET_FILL_STYLE, fillStyle];\n" +
-                "      if (typeof fillStyle !== 'string') {\n" +
-                "        var viewExtent = map.getView().getProjection().getExtent();\n" +
-                "        fillInstruction.push([viewExtent[0], viewExtent[3]]);\n" +
-                "      }\n" +
-                "      this.instructions.push(fillInstruction);\n" +
-                "    };\n";
-
-        iniMap.append(applyFillPattern);
+        iniMap.append("    var ress="+ressbuffer.toString()+";\n");
+        iniMap.append(String.format("    var center = [%f, %f];\n", centerX, centerY));
+        iniMap.append(String.format("    var minZ=%d;\n", minZoom));
+        iniMap.append(String.format("    var maxZ=%d;\n", maxZoom));
+        iniMap.append(String.format("    var mapName='%s';\n", cacheName));
+        iniMap.append(String.format("    var tileSize=%d;\n", tileSize));
 
 //        将iniMap字符串替换到olbase.html页面中
         olbaseContent = olbaseContent.replace(REPLACEKEY,iniMap.toString());

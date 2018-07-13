@@ -8,7 +8,7 @@
   <script src="./dist/olms.js"></script>
   <script src="./dist/mapbox-gl.js"></script>
   <link href='./dist/mapbox-gl.css' rel='stylesheet' />
-  <script src="./dist/olextends.js"></script>
+  <script src="./dist/iclient9-openlayers.js"></script>
   <style>
     html,
     body {
@@ -72,87 +72,99 @@
       target: 'map1',
       view: view
     });
-    olExtends(map1);
 
-    var format = new ol.format.MVT({
-      featureClass: ol.Feature
-    });
-    var mvtLayer = new ol.layer.VectorTile({
-      source: new ol.source.VectorTile({
-        format: format,
-        url: '/tiles/{z}/{x}/{y}.mvt',
-        projection: proj,
-        tileGrid: new ol.tilegrid.TileGrid({
-          resolutions: ress,
-          origin: [extent[0], extent[3]],
-          tileSize: 512
-        })
-      }),
-      declutter: true,
-      opacity: 1
-    });
-    mvtLayer.setFastRender(true);
+
     var root = window.location.href;
 
 
     root = root.substring(0, root.lastIndexOf("/") + 1);
     fetch('styles/style.json').then(function (response) {
       response.json().then(function (glStyle) {
-        olms.applyStyle(mvtLayer, glStyle, sourceName, '', ress).then(function () {
-          map1.addLayer(mvtLayer);
+        olms.applyBackground(map1,glStyle);
 
-          // 修改style,sprite, glyphs为绝对路径
-          var target = root + glStyle.sources[sourceName].tiles[0];
+          var format = new ol.format.MVT({
+          featureClass: ol.render.Feature
+        });
+      var style = new ol.supermap.MapboxStyles({
+          style: glStyle,
+          source: sourceName,
+          map: map1,
+          resolutions: ress,
+        });
 
-          glStyle.sources[sourceName].tiles[0] = target;
-
-          glStyle.sprite = root + glStyle.sprite;
-          glStyle.glyphs = root + glStyle.glyphs;
-
-          mapboxgl.accessToken =
-            'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
-          map2 = new mapboxgl.Map({
-            container: 'map2', // container id
-            style: glStyle,
-            center: ol.proj.toLonLat(center),
-            zoom: zoom,
-            minZoom: minZoom,
-            maxZoom: maxZoom
-          });
-
-          var nav = new mapboxgl.NavigationControl();
-          map2.addControl(nav, 'top-left');
-          var sca = new mapboxgl.ScaleControl({ maxWith: 80, unit: 'imperial' });
-          map2.addControl(sca);
-
-          var byol = false;
-          map1.on('moveend', function (e) {
-            byol = true;
-            var newRes = e.target.getView().getZoom();
-            var newCenter = e.target.getView().getCenter();
-            console.log('map1 moved' + newCenter + "," + newRes);
-
-            map2.setZoom(newRes);
-            map2.panTo(ol.proj.toLonLat(newCenter));
-
-            byol = false;
-          })
-          map2.on('moveend', function (e) {
-            var zoom = e.target.getZoom();
-            zoom = Math.round(zoom);
-            var center = ol.proj.fromLonLat([e.target.getCenter().lng, e.target.getCenter().lat]);
-            if (!byol) {
-              map1.getView().animate({
-                zoom: zoom
-              }, {
-                  center: center
-                });
-            }
-            console.log('map2 moved' + center + "," + zoom);
-
-
+      var source = new ol.source.VectorTile({
+          format: format,
+          url: '/tiles/{z}/{x}/{y}.mvt',
+          projection: proj,
+          tileGrid: new ol.tilegrid.TileGrid({
+            resolutions: ress,
+            origin:  [extent[0],extent[3]],
+            tileSize: 512
           })
         });
+
+      style.on('styleloaded', function () {
+          var mvtLayer = new ol.layer.VectorTile({
+            source: source,
+            style: style.getStyleFunction(),
+            declutter: true,
+            opacity: 1
+          });
+          mvtLayer.setFastRender(true);
+          map1.addLayer(mvtLayer);
+      });
+
+
+        // 添加mapbox相关内容
+        // 修改style,sprite, glyphs为绝对路径
+        var target = root + glStyle.sources[sourceName].tiles[0];
+
+        glStyle.sources[sourceName].tiles[0] = target;
+
+        glStyle.sprite = root + glStyle.sprite;
+        glStyle.glyphs = root + glStyle.glyphs;
+
+        mapboxgl.accessToken =
+          'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
+        map2 = new mapboxgl.Map({
+          container: 'map2', // container id
+          style: glStyle,
+          center: ol.proj.toLonLat(center),
+          zoom: zoom,
+          minZoom: minZoom,
+          maxZoom: maxZoom
+        });
+
+        var nav = new mapboxgl.NavigationControl();
+        map2.addControl(nav, 'top-left');
+        var sca = new mapboxgl.ScaleControl({ maxWith: 80, unit: 'imperial' });
+        map2.addControl(sca);
+
+        var byol = false;
+        map1.on('moveend', function (e) {
+          byol = true;
+          var newRes = e.target.getView().getZoom();
+          var newCenter = e.target.getView().getCenter();
+          console.log('map1 moved' + newCenter + "," + newRes);
+
+          map2.setZoom(newRes);
+          map2.panTo(ol.proj.toLonLat(newCenter));
+
+          byol = false;
+        })
+        map2.on('moveend', function (e) {
+          var zoom = e.target.getZoom();
+          zoom = Math.round(zoom);
+          var center = ol.proj.fromLonLat([e.target.getCenter().lng, e.target.getCenter().lat]);
+          if (!byol) {
+            map1.getView().animate({
+              zoom: zoom
+            }, {
+                center: center
+              });
+          }
+          console.log('map2 moved' + center + "," + zoom);
+        })
       });
     });
   </script>

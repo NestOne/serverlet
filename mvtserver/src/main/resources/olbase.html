@@ -3,25 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <title>mvt browser</title>
-    <link rel="stylesheet" href="./dist/ol.css" type="text/css">
+    <link rel="stylesheet" href="./dist_new/ol.css" type="text/css">
     <script src="./dist/ol-debug.js"></script>
-    <script src="./dist/olms.js"></script>
-    <script src="./dist/olextends.js"></script>
+    <script src="./dist/olms-debug.js"></script>
+    <script src="./dist/iclient9-openlayers.js"></script>
     <style>
-        html,
-        body,
-        #map {
-            font-family: sans-serif;
-            margin: 0;
-            width: 100%;
-            height: 100%;
-        }
+    html,
+    body,
+    #map {
+      font-family: sans-serif;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ol-popup {
+      position: absolute;
+      background-color: white;
+      -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #cccccc;
+      bottom: 12px;
+      left: -50px;
+      min-width: 280px;
+    }
+
+    .ol-popup:after,
+    .ol-popup:before {
+      top: 100%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .ol-popup:after {
+      border-top-color: white;
+      border-width: 10px;
+      left: 48px;
+      margin-left: -10px;
+    }
+
+    .ol-popup:before {
+      border-top-color: #cccccc;
+      border-width: 11px;
+      left: 48px;
+      margin-left: -11px;
+    }
+
+    .ol-popup-closer {
+      text-decoration: none;
+      position: absolute;
+      top: 2px;
+      right: 8px;
+    }
+
+    .ol-popup-closer:after {
+      content: "✖";
+    }
     </style>
 </head>
 <body>
-    <div id='map'></div>
-    <script>
+<div id='map'></div>
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content"></div>
+</div>
+<script>
     <!--inserjscode-->
+
+    var z = minZ
+    var extent=proj.getExtent();
+    var container = document.getElementById('popup');
+    var content = document.getElementById('popup-content');
+    var closer = document.getElementById('popup-closer');
+
+    var overlay = new ol.Overlay({
+      element: container,
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      }
+    });
+
+    closer.onclick = function () {
+      overlay.setPosition(undefined);
+      closer.blur();
+      return false;
+    };
+
+    
+    var scaleLineControl = new ol.control.ScaleLine();
+    var map = new ol.Map({
+      target: 'map',
+      overlays: [overlay],
+      controls: ol.control.defaults({
+          attributionOptions: {
+            collapsible: false
+          }
+        }).extend([
+          scaleLineControl
+        ]),
+      view: new ol.View({
+        center: center,
+        minZoom:minZ,
+        maxZoom:maxZ,
+        zoom: z,
+        projection: proj,
+        resolutions: ress
+        })
+      });
+
+
+    fetch('styles/style.json').then(function (response) {
+      response.json().then(function (glStyle) {
+      olms.applyBackground(map,glStyle);
+      var format = new ol.format.MVT({
+          featureClass: ol.render.Feature
+          // 需要查看更多属性时，改成使用ol.Feature类型，不过该类型需要更多内存
+          // featureClass: ol.Feature
+        });
+      var style = new ol.supermap.MapboxStyles({
+          style: glStyle,
+          source: mapName,
+          map: map,
+          resolutions: ress,
+          selectedStyle: function () {
+              return new ol.style.Style({
+                  fill: new ol.style.Fill({
+                      color: 'rgba(0, 0, 255, 0.5)'
+                  }),
+                  stroke: new ol.style.Stroke({
+                      color: 'rgba(0, 0, 255, 0.5)',
+                      width: 2
+                  }),
+                  text: new ol.style.Text({
+                      font: 'normal 400 11.19px "Microsoft YaHei"',
+                      placement: 'point',
+                      fill: new ol.style.Fill({
+                          color: 'blue'
+                      })
+                  }),
+                  image: new ol.style.Circle({
+                      radius: 5,
+                      fill: new ol.style.Fill({
+                          color: 'blue'
+                      })
+                  })
+              })
+          }
+        });
+
+      var source = new ol.source.VectorTile({
+          format: format,
+          url: '/tiles/{z}/{x}/{y}.mvt',
+          projection: proj,
+          tileGrid: new ol.tilegrid.TileGrid({
+            resolutions: ress,
+            origin:  [extent[0],extent[3]],
+            tileSize: tileSize
+          })
+        });
+
+      style.on('styleloaded', function () {
+          var mvtLayer = new ol.layer.VectorTile({
+            source: source,
+            style: style.getStyleFunction(),
+            declutter: true,
+            opacity: 1
+          });
+          mvtLayer.setFastRender(true);
+          map.addLayer(mvtLayer);
+
+          // map.addLayer(
+          //   new ol.layer.Tile({
+          //     //瓦片网格数据源, 显示的内容为 levev，x(column), y（row), -(y+1)为实际的瓦片值
+          //     source: new ol.source.TileDebug({
+          //       //投影
+          //       projection: proj,
+          //       //获取瓦片网格信息
+          //       tileGrid: mvtLayer.getSource().getTileGrid(),
+          //       wrapX: true
+          //     })
+          //   }));
+          map.on('click', function (e) {
+            var features = map.getFeaturesAtPixel(e.pixel);
+            if (!features) {
+              overlay.setPosition(undefined);
+              return;
+            }
+            var f = features[0];
+            container.style.opacity = 1;
+            var coordinate = e.coordinate;
+            var innerHtml ="";
+            if(f instanceof ol.render.Feature){
+              innerHtml += "layer: "+ f.get('layer') + "<br />"
+            }else{
+              var keys = f.getKeys();
+              for(var i=0; i<keys.length;i++){
+                if(keys[i] != "geometry"){
+                  innerHtml += keys[i]+": "+f.get(keys[i]) + "<br />"
+                }
+              }
+            }
+            content.innerHTML = innerHtml;
+            overlay.setPosition(coordinate);
+            style.setSelectedId(features[0].getId(), features[0].get('layer'));
+            source.changed();
+          });
+        })
+      });
+    });
     </script>
 </body>
 </html>
