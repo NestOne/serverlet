@@ -1,10 +1,10 @@
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
+import com.supermap.bdt.mapping.render.HBaseLayerRender
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.handler.AbstractHandler
-import com.supermap.bdt.mapping.HBaseFeatureRender
 
-class HBaseHandler(hBaseFeatureRender : HBaseFeatureRender) extends AbstractHandler{
+class HBaseHandler(hBaseFeatureRender : HBaseLayerRender) extends AbstractHandler{
   override def handle(s: String, request: Request, httpServletRequest: HttpServletRequest, httpServletResponse: HttpServletResponse): Unit = {
     if(!s.endsWith(".mvt")){
       return;
@@ -13,7 +13,7 @@ class HBaseHandler(hBaseFeatureRender : HBaseFeatureRender) extends AbstractHand
     val start = System.currentTimeMillis()
     val (level, col, row) = pathToURL(s)
 
-    val bytes = hBaseFeatureRender.renderVector(level, col, row)
+    val bytes = hBaseFeatureRender.makeVectorTile(level, col, row)
 
     if(bytes != null){
       httpServletResponse.getOutputStream.write(bytes)

@@ -6,8 +6,8 @@ object Arguments {
     args.foreach( arg => {
       if(arg.startsWith("-") && arg.contains("=")){
         val parts = arg.split("=")
-        var key = parts(0)
-        val value = parts(1)
+        var key = parts(0).trim
+        val value = parts(1).trim
 
         key = key.replace("-", "")
 

@@ -7,7 +7,8 @@ import javax.servlet.ServletException
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.alibaba.fastjson.{JSON, JSONObject}
-import com.supermap.bdt.mapping.DMap
+import com.supermap.bdt.mapping.dmap.DMap
+import com.supermap.bdt.mapping.render.MapRender
 import com.supermap.data.{Point2D, Rectangle2D, Workspace, WorkspaceConnectionInfo}
 import org.apache.commons.io.FileUtils
 import org.locationtech.geomesa.hbase.data.HBaseDataStoreParams.HBaseCatalogParam
@@ -18,7 +19,7 @@ import scala.collection.JavaConversions._
 /**
   * Created by Administrator on 2017/8/30.
   */
-abstract class  MapImageServerlet(m_dmap: DMap) extends HttpServlet{
+abstract class  MapImageServerlet(mapRender: MapRender) extends HttpServlet{
   private val serialVersionUID: Long = 1L
   
    def getImage(level : Int, col : Int, row : Int):Array[Byte]
@@ -69,22 +70,22 @@ abstract class  MapImageServerlet(m_dmap: DMap) extends HttpServlet{
   }
 }
 
-class RDDHdfsServerlet(m_dmap: DMap) extends MapImageServerlet(m_dmap){
+class RDDHdfsServerlet(mapRender: MapRender) extends MapImageServerlet(mapRender){
   override def getImage(level : Int, col : Int, row : Int):Array[Byte] ={
-    m_dmap.renderBitmap(level, col, row)
+    mapRender.renderBitmap(level, col, row, 1)
   }
 }
 
-class MVTServerlet(m_dmap: DMap) extends MapImageServerlet(m_dmap){
-  override def getImage(level : Int, col : Int, row : Int):Array[Byte] ={
-    //m_dmap.renderVector(level, col, row)
-    val basePath = s"F:\\nanning\\nanning_3857\\DLTB_2w_Double@nanning\\tiles\\$level\\$col\\$row.mvt"
-    val file = new File(basePath)
-    if(file.exists()){
-      FileUtils.readFileToByteArray(file)
-    } else null
-  }
-}
+//class MVTServerlet(mapRender: MapRender) extends MapImageServerlet(m_dmap){
+//  override def getImage(level : Int, col : Int, row : Int):Array[Byte] ={
+//    //m_dmap.renderVector(level, col, row)
+//    val basePath = s"F:\\nanning\\nanning_3857\\DLTB_2w_Double@nanning\\tiles\\$level\\$col\\$row.mvt"
+//    val file = new File(basePath)
+//    if(file.exists()){
+//      FileUtils.readFileToByteArray(file)
+//    } else null
+//  }
+//}
 
 
 class StatusSeverlet extends HttpServlet {

@@ -1,11 +1,11 @@
 import java.net.URI
 
-import com.supermap.bdt.mapping.{ DMap}
+import com.supermap.bdt.mapping.dmap.DMap
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder}
 
 object Startup_Pyramid {
-
+// TODO 修改代码后不可用
   def main(args: Array[String]): Unit = {
     // args(0) 原始层索引文件位置
     // args(1) 金字塔文件存储位置
@@ -37,7 +37,7 @@ object Startup_Pyramid {
 //      }
 
       println("end buildhdfsIndex.(ms)", System.currentTimeMillis() - dStart)
-      context.addServlet(new ServletHolder(new RDDHdfsServerlet(dMap)), "/image.png");
+     // context.addServlet(new ServletHolder(new RDDHdfsServerlet(dMap)), "/image.png");
     }
 
     println("start cost(ms):", System.currentTimeMillis() - start)
