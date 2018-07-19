@@ -33,8 +33,9 @@ public class cfFileHandler extends AbstractHandler {
 
         String rowStr = subs[subs.length - 1];
         rowStr = rowStr.substring(0, rowStr.length() - 4);
+        String tilesFolder = subs[subs.length - 4];
 
-        return new String[]{levelStr, rowStr, columnStr};
+        return new String[]{levelStr, rowStr, columnStr,tilesFolder};
     }
 
     @Override
@@ -49,8 +50,9 @@ public class cfFileHandler extends AbstractHandler {
         String levelStr = lrc[0];
         int row = Integer.valueOf(lrc[1]);
         int column = Integer.valueOf(lrc[2]);
+        String tileFoder = lrc[lrc.length-1];
 
-        String cfFileName = m_basePath + "/tiles/" + levelStr + "/" + row / 128 + "/" + column / 128 + ".cf";
+        String cfFileName = m_basePath + "/" + tileFoder + "/" + levelStr + "/" + row / 128 + "/" + column / 128 + ".cf";
 //        System.out.println(cfFileName);
         int rowIndexIncf = row % 128;
         int columnIndexIncf = column % 128;
