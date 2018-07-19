@@ -40,7 +40,7 @@ object StartupHBase {
           println("need arg 'epsg' like -epsg=3857")
           return
         }else{
-          argDic("typeName")
+          argDic("epsg")
         }
 
       val htmlPath =
@@ -71,7 +71,8 @@ object StartupHBase {
 
       println("start open hbase datastore")
 
-      val hBaseRender = new HBaseFeatureRender(tableName, typeName, zookeeper = zookeeper, epsg = epsg.toInt)
+      val hBaseRender = new HBaseFeatureRender(tableName, typeName, epsg.toInt, "192.168.12.201:2181,192.168.12.202:2181,192.168.12.203:2181")
+	  //hBaseRender.initialize();
 
       println("open hbase datastore cost " + (System.currentTimeMillis() - start) + "ms")
 
