@@ -1,8 +1,21 @@
+
 import scala.collection.mutable
 
+class Arguments(){
+  private val m_hash : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
+
+  def add(key : String, value : String): Unit ={
+    m_hash += (key -> value)
+  }
+
+  def get(key : String) : Option[String] ={
+      m_hash.get(key)
+  }
+}
+
 object Arguments {
-  def apply(args: Array[String]): mutable.HashMap[String, String] = {
-    val dic = new mutable.HashMap[String, String]
+  def apply(args: Array[String]): Arguments = {
+    val arguments = new Arguments
     args.foreach( arg => {
       if(arg.startsWith("-") && arg.contains("=")){
         val parts = arg.split("=")
@@ -11,10 +24,10 @@ object Arguments {
 
         key = key.replace("-", "")
 
-        dic += (key -> value)
+        arguments.add(key, value)
       }
     })
 
-    dic
+    arguments
   }
 }

@@ -17,44 +17,27 @@ object StartupHBaseLayer {
       // 测试shapeless依赖问题
       val point = geotrellis.vector.Point(1, 32)
 
-      val argDic = Arguments(args)
+      val arguments = Arguments(args)
 
-      val tableName =
-        if(!argDic.contains("tableName")){
-          println("need arg 'tableName' like -tableName=nanning")
-          return
-        }else{
-          argDic("tableName")
-        }
+      val tableName = arguments.get("tableName").getOrElse({
+        println("need arg 'tableName' like -tableName=nanning")
+        return })
 
-      val typeName =
-        if(!argDic.contains("typeName")){
-          println("need arg 'typeName' like -typeName=DLTB_2w_Double")
-          return
-        }else{
-          argDic("typeName")
-        }
+      val typeName = arguments.get("typeName").getOrElse({
+        println("need arg 'typeName' like -typeName=DLTB_2w_Double")
+        return })
 
+      val epsg = arguments.get("epsg").getOrElse({
+        println("need arg 'epsg' like -epsg=3857")
+        return })
 
-      val epsg =
-        if(!argDic.contains("epsg")){
-          println("need arg 'epsg' like -epsg=3857")
-          return
-        }else{
-          argDic("epsg")
-        }
-
-      val htmlPath =
-        if(!argDic.contains("htmlPath")){
-          println("need arg 'htmlPath' like -htmlPath=/home/index.html")
-          return
-        }else{
-          argDic("htmlPath")
-        }
+      val htmlPath = arguments.get("htmlPath").getOrElse({
+        println("need arg 'htmlPath' like -htmlPath=/home/index.html")
+        return })
 
       // 可选参数
-      val port : Int = argDic.getOrElse("port", "8013").toInt
-      val zookeeper = argDic.getOrElse("zookeeper", null)
+      val port : Int = arguments.get("port").getOrElse("8013").toInt
+      val zookeeper = arguments.get("zookeeper").getOrElse(null)
 
       println("start open hbase datastore")
 

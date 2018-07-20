@@ -25,7 +25,10 @@ class MultiSourceMvtHandler(mapRender : MapRender) extends AbstractHandler{
   def pathToURL(path : String) : (Int, Int, Int, Int)={
     val subs = path.split("/")
     val caption = subs(subs.length - 4)
-    val jute = if(caption == "2") 0 else 1
+    val jute =
+      if(caption == "3") 0
+      else if(caption == "2") 1
+      else 2
     val levelStr = subs(subs.length - 3)
     val columnStr = subs(subs.length - 2)
 

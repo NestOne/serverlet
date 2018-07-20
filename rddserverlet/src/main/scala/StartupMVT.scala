@@ -1,8 +1,7 @@
 
 import java.io.File
 
-import com.supermap.bdt.mapping.render.{HBaseLayerRender, MapRender}
-import com.supermap.bdt.mapping.util.tiling.CRS
+import com.supermap.bdt.mapping.render.{MapRender}
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.{DefaultHandler, HandlerList, ResourceHandler}
 
@@ -15,35 +14,24 @@ object StartupMVT {
     if (args.length > 1) {
       val start = System.currentTimeMillis()
 
-      val argDic = Arguments(args)
+      val arguments = Arguments(args)
 
-      val workspacePath =
-        if(!argDic.contains("workspacePath")){
-          println("need arg 'workspacePath' like -workspacePath=nanning.smw")
-          return
-        }else{
-          argDic("workspacePath")
-        }
+      val workspacePath = arguments.get("workspacePath").getOrElse({
+        println("need arg 'workspacePath' like -workspace=nanning.smwu")
+        return })
 
-      val mapName =
-        if(!argDic.contains("mapName")){
-          println("need arg 'mapName' like -mapName=DLTB_2w_Double")
-          return
-        }else{
-          argDic("mapName")
-        }
+      val mapName = arguments.get("mapName").getOrElse({
+        println("need arg 'mapName' like -mapName=DLTB_2w_Double")
+        return })
 
-      val htmlPath =
-        if(!argDic.contains("htmlPath")){
-          println("need arg 'htmlPath' like -htmlPath=/home/index.html")
-          return
-        }else{
-          argDic("htmlPath")
-        }
+      val htmlPath = arguments.get("htmlPath").getOrElse({
+        println("need arg 'htmlPath' like -htmlPath=/home/index.html")
+        return })
+
 
       // 可选参数
-      val port : Int = argDic.getOrElse("port", "8013").toInt
-      val zookeeper = argDic.getOrElse("zookeeper", null)
+      val port : Int = arguments.get("port").getOrElse("8013").toInt
+      val zookeeper = arguments.get("zookeeper").getOrElse(null)
 
       println("start initialize mapRender")
 
