@@ -1,0 +1,35 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>广西地类图斑1000w数据浏览</title>
+</head>
+<body style=" margin: 0;overflow: hidden;background: #fff;width: 100%;height:100%;position: absolute;top: 0;">
+<div id="map" style="margin:0 auto;width: 100%;height: 100%"></div>
+<!-- div id="map" style="margin:0 auto;width:1024px;height:1024px"></div -->
+<link rel="stylesheet" href="./libs/leaflet.css">
+<script type="text/javascript" src="./libs/leaflet.js"></script>
+<script type="text/javascript" src="./libs/iclient9-leaflet.js"></script>
+
+<script type="text/javascript">
+	//Proj4js.defs("EPSG:2344","+proj=tmerc +lat_0=0 +lon_0=114 +k=1 +x_0=38500000 +y_0=0 +a=6378140 +b=6356755.288157528 +units=m +no_defs");
+	var crs = L.Proj.CRS("EPSG:3857", {
+		//origin: [114.59, 42.31],
+		//scaleDenominators: [2000000,1000000,500000,250000,125000,62500,31250,20000,10000,5000],	
+		//bounds:[[36139988.0551312,2312732.76683701],[36911717.3576505,2923289.60089983]]
+		bounds:[[11626813.17298276,2380229.4869330558],[12473979.346795022,3047279.656034308]]
+		//bounds:[[left,bottom],[right,top]]
+	});
+    var map, url="http://172.16.18.8:8010"
+    map = L.map('map', {
+        center: crs.unproject(L.point(12050396.2598889,2713754.57148368)),
+        minZoom: 0,
+		maxZoom: 18,
+        zoom: 3,
+        crs:crs,
+    });
+   // L.supermap.imageMapLayer(url,{tileSize:512}).addTo(map);
+	L.supermap.tiledMapLayer(url,{tileSize:512}).addTo(map);
+</script>
+
+</body>
+</html>
