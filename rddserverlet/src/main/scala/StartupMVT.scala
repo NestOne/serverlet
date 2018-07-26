@@ -1,7 +1,8 @@
 
 import java.io.File
 
-import com.supermap.bdt.mapping.render.{MapRender}
+import com.supermap.bdt.mapping.render.{HBaseLayerRender, LayerRenderConfig, MapRender}
+import com.supermap.bdt.mapping.util.tiling.CRS
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.{DefaultHandler, HandlerList, ResourceHandler}
 
@@ -14,24 +15,33 @@ object StartupMVT {
     if (args.length > 1) {
       val start = System.currentTimeMillis()
 
-      val arguments = Arguments(args)
+      val argDic = Arguments(args)
 
-      val workspacePath = arguments.get("workspacePath").getOrElse({
-        println("need arg 'workspacePath' like -workspace=nanning.smwu")
-        return })
+      val workspacePath =
+        if(argDic.get("workspacePath").isEmpty){
+          println("need arg 'workspacePath' like -workspacePath=nanning.smw")
+          return
+        }else{
+          argDic.get("workspacePath").get
+        }
 
-      val mapName = arguments.get("mapName").getOrElse({
-        println("need arg 'mapName' like -mapName=DLTB_2w_Double")
-        return })
+      val mapName =
+        if(argDic.get("mapName").isEmpty){
+          println("need arg 'mapName' like -mapName=DLTB_2w_Double")
+          return
+        }else{
+          argDic.get("mapName").get
+        }
 
-      val htmlPath = arguments.get("htmlPath").getOrElse({
-        println("need arg 'htmlPath' like -htmlPath=/home/index.html")
-        return })
-
-
-      // 可选参数
-      val port : Int = arguments.get("port").getOrElse("8013").toInt
-      val zookeeper = arguments.get("zookeeper").getOrElse(null)
+      val htmlPath =
+        if(argDic.get("htmlPath").isEmpty){
+          println("need arg 'htmlPath' like -htmlPath=/home/index.html")
+          return
+        }else{
+          argDic.get("htmlPath").get
+        }      // 可选参数
+      val zookeeper = argDic.get("zookeeper").get
+	  val port : Int = argDic.get("port").get.toInt
 
       println("start initialize mapRender")
 
@@ -49,11 +59,11 @@ object StartupMVT {
       resource_handler.setResourceBase(htmlFolder)
 
       val handlers: HandlerList = new HandlerList
-      handlers.setHandlers(Array(new MultiSourceMvtHandler(mapRender), resource_handler, new DefaultHandler))
+      handlers.setHandlers(Array(new EanbleCORSHandler(), new MultiSourceMvtHandler(mapRender), resource_handler, new DefaultHandler))
       server.setHandler(handlers)
 
       val host = server.getURI
-      System.out.println("open by openlayers viewer http://" + host.getHost + ":" + 8013 + "/" + htmlFile.getName)
+      System.out.println("open by openlayers viewer http://" + host.getHost + ":" + port + "/" + htmlFile.getName)
 
       println("start cost(ms):", System.currentTimeMillis() - start)
 

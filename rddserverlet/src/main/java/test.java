@@ -1,18 +1,35 @@
-//import com.supermap.bdt.geotools.SGeometry;
-//import com.supermap.bdt.io.SGeometryReadWriter;
-//import com.supermap.data.Point2D;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-/**
- * Created by Administrator on 2017/10/30.
- */
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class test {
-    //
-    public static void main(String[] args) throws Exception {
-//        SGeometry geoPnt = SGeometry.fromPoint2D(new Point2D(10, 20));
-//        String json = SGeometryReadWriter.toGeoJson(geoPnt);
-//        System.out.println(json);
-//
-//        SGeometry newOne = SGeometryReadWriter.fromGeoJson(json);
-//        System.out.println(SGeometryReadWriter.toGeoJson(newOne));
+
+    public static void main(String[] args) {
+
+        JSONObject obj = new JSONObject();
+        obj.put("name", "mkyong.com");
+        obj.put("age", new Integer(100));
+
+        JSONArray list = new JSONArray();
+        list.add("msg 1");
+        list.add("msg 2");
+        list.add("msg 3");
+
+        obj.put("messages", list);
+
+        try (FileWriter file = new FileWriter("f:\\test.json")) {
+
+            file.write(obj.toJSONString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print(obj);
+
     }
+
 }

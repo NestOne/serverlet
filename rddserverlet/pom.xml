@@ -13,7 +13,7 @@
         <groupId>com.supermap</groupId>
         <artifactId>bdt-parent</artifactId>
         <version>9.1.0</version>
-        <relativePath>../../../iobject4spark/mapping/pom.xml</relativePath>
+        <relativePath>E:/workCode/iobjects-for-spark_master/iobjects-for-spark/pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -28,6 +28,12 @@
     </repositories>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>25.1-jre</version>
+        </dependency>
         <dependency>
             <groupId>com.supermap</groupId>
             <artifactId>com.supermap.data</artifactId>
@@ -417,6 +423,14 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <!-- see http://davidb.github.com/scala-maven-plugin -->
