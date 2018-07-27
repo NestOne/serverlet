@@ -1,14 +1,10 @@
 import java.net.URLDecoder
 
-import com.google.common.cache.{CacheLoader, LoadingCache}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import com.supermap.bdt.mapping.render.{HBaseLayerRender, LayerRender, MVTRenderEngine, MapRender}
-import com.supermap.bdt.mapping.util.tiling.CRS
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.handler.AbstractHandler
-
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConversions._
 
 /**
   * 通过tiles请求时为所有的图层合并到一个mvt tile中，如果是用dataset@catalog的方式请求，则为分层显示，方便配图使用
@@ -20,34 +16,25 @@ class MvtHandler extends AbstractHandler {
     if(!target.endsWith(".mvt")){
       return;
     }
-    var queryString = ""
-    if(request.getQueryString() != null){
-      queryString = URLDecoder.decode(request.getQueryString(),"UTF-8")
+    var queryString = request.getQueryString()
+    var tileKey:String = "all"
+    if(!StringUtils.isBlank(queryString)){
+      queryString = URLDecoder.decode(queryString,"UTF-8")
       val args = queryString.split("&")
-      val hashValues = new scala.collection.mutable.HashMap[String,String]()
-      for( i <- 0 to args.length){
-        val keyAndValue = args(i).split("=");
-        hashValues.put(keyAndValue(0),keyAndValue(1))
+      val hashValues = new java.util.HashMap[String,String]()
+      for( i <- 0 until args.length){
+        val str = args(i)
+        val index = str.indexOf("=")
+        hashValues.put(str.substring(0,index),str.substring(index+1))
       }
-      val keyField = if(hashValues.contains("filed")){
-        hashValues.get("field").toString
-      }else{
-        ""
+      if(hashValues.contains("sourceLayer")){
+        tileKey = hashValues.get("sourceLayer")
       }
-    }
-
-
-
-    val tileKey = if(StringUtils.isBlank(queryString)){
-      "all"
-    }else{
-      queryString
     }
     var tiles = TileCache.getTile(target)
-    val tile:Array[Byte] = if(tiles != null){
-      tiles.get(tileKey)
-    }else{
-      null
+    var tile:Array[Byte] = null
+    if(tiles != null){
+      tile = tiles.get(tileKey)
     }
 
     if(tile != null){

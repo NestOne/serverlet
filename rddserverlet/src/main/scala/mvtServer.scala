@@ -49,7 +49,7 @@ object mvtServer {
       if(info.typ == "HBase"){
         val reader = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),crs,info.m_haspMap.get("zookeeper"))
         reader.m_idFieldName = info.m_haspMap.get("idField")
-
+        reader.m_splitLayerFieldName = info.m_haspMap.get("splitField")
         reader.initialize()
         renders += reader
       }
