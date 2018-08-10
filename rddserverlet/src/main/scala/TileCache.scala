@@ -13,24 +13,9 @@ class mvtLoader(layerRenders : ArrayBuffer[LayerRender]) extends com.google.comm
 
   override def load(target: String): java.util.Map[String,Array[Byte]] = {
 //    k为瓦片，需要根据图层分开，
-    val (tileSource, zoom, col, row) = pathToURL(target)
+    val (tileSource, zoom, col, row) = TileCache.pathToURL(target)
 
     MVTRenderEngine.generatemvt(layerRenders,crs,zoom,col,row)
-
-  }
-
-  def pathToURL(path : String) : (String,Int, Int, Int)={
-    val subs = path.split("/")
-    val levelStr = subs(subs.length - 3)
-    val columnStr = subs(subs.length - 2)
-
-    var rowStr = subs(subs.length - 1)
-    rowStr = rowStr.substring(0, rowStr.length - 4)
-    val tilesFolder = subs(subs.length - 4)
-
-    (tilesFolder,levelStr.toInt, columnStr.toInt, rowStr.toInt)
-
-
 
   }
 
@@ -54,6 +39,17 @@ object TileCache {
     return g_doneCache.get(url)
   }
 
+  def pathToURL(path : String) : (String,Int, Int, Int)={
+    val subs = path.split("/")
+    val levelStr = subs(subs.length - 3)
+    val columnStr = subs(subs.length - 2)
+
+    var rowStr = subs(subs.length - 1)
+    rowStr = rowStr.substring(0, rowStr.length - 4)
+    val tilesFolder = subs(subs.length - 4)
+
+    (tilesFolder,levelStr.toInt, columnStr.toInt, rowStr.toInt)
+  }
 
 
 }

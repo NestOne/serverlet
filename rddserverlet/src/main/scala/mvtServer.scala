@@ -20,6 +20,13 @@ object mvtServer {
   //    这里用来测试功能的正确性，根据
 
   def main(args:Array[String]) ={
+
+    var cr2 = new CRS(3857)
+    val d =cr2.worldExtent
+    val de = Array[Double](d.getLeft, d.getBottom, d.getRight, d.getTop)
+    val x =12965271.776953
+    val y = 4903304.456258
+    val newPt2 = HtmlGenerator.alterMBGLCenter(x,y,de,512)
     val dataJson = args(0)
     var port = 8020
     if(args.length >1){
@@ -36,32 +43,33 @@ object mvtServer {
     val tileSize: Int = 512
 
     val lines = Source.fromFile(dataJson,"UTF-8").getLines().mkString("");
-    val dataInfos = JsonConverter.parseJson(lines,classOf[Array[java.util.HashMap[String,String]]])
+    val dataInfos = JsonConverter.parseJson(lines,classOf[Array[java.util.HashMap[String,Object]]])
 
     val renders = new ArrayBuffer[LayerRender]()
     var crs = new CRS(4326)
     for( infoHash <- dataInfos){
       val info = new LayerRenderConfig("HBase")
       for( key <- infoHash.keySet().toArray){
-        info.m_haspMap.put(key.toString,infoHash.get(key.toString))
+        info.m_haspMap.put(key.toString,infoHash.get(key).toString())
       }
 
       if(info.typ == "HBase"){
         val reader = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),crs,info.m_haspMap.get("zookeeper"))
         reader.m_idFieldName = info.m_haspMap.get("idField")
         reader.m_splitLayerFieldName = info.m_haspMap.get("splitField")
+        reader.m_includeInnerPoint = info.m_haspMap.get("includeInnerPoint").toBoolean
         reader.initialize()
         renders += reader
       }
     }
-    TileCache.initTileLoader(renders)
+    TileDataCache.initTileLoader(renders)
     val server = new Server(port)
     val resource_handler = new ResourceHandler
     resource_handler.setDirectoriesListed(true)
     resource_handler.setResourceBase(resouceFolder)
 
     val handlers: HandlerList = new HandlerList
-    handlers.setHandlers(Array(new EanbleCORSHandler(), new MvtHandler, resource_handler, new DefaultHandler))
+    handlers.setHandlers(Array(new EanbleCORSHandler(), new MultiThreadMvtHandler, resource_handler, new DefaultHandler))
     server.setHandler(handlers)
 
     val host = server.getURI.getHost
@@ -89,7 +97,8 @@ object mvtServer {
       }
 
       HtmlGenerator.generateOL4(resouceFolder,cacheName,crs.m_epsg,zoom.toInt,21,ress,centerX,centerY,indexExtent,tileSize)
-      System.out.println(s"open with editor http://$host:$port/editor/index.html/$zoom/$editorY/$editorX")
+      System.out.println(s"open with editor http://$host:$port/editor/index.html#$zoom/$editorY/$editorX")
+      System.out.println(s"tile url http://$host:$port/tiles/{z}/{x}/{y}.mvt")
       System.out.println(s"open by openlayers viewer http://$host:$port/index.html")
       System.out.println(s"open in mapbox-gl http://$host:$port/indexmbgl.html")
     }else{

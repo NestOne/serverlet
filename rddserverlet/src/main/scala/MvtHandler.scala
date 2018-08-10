@@ -31,7 +31,7 @@ class MvtHandler extends AbstractHandler {
         tileKey = hashValues.get("sourceLayer")
       }
     }
-    var tiles = TileCache.getTile(target)
+    val tiles = TileCache.getTile(target)
     var tile:Array[Byte] = null
     if(tiles != null){
       tile = tiles.get(tileKey)
