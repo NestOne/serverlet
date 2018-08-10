@@ -7,6 +7,8 @@
     <script src="./dist/ol-debug.js"></script>
     <script src="./dist/olms-debug.js"></script>
     <script src="./dist/iclient9-openlayers.js"></script>
+    <link rel="stylesheet" href="./dist/ol-layerswitcher.css" type="text/css">
+    <script type="text/javascript" src="./dist/ol-layerswitcher.js"></script>
     <style>
     html,
     body,
@@ -167,6 +169,7 @@
       }
       content.innerHTML = innerHtml;
       overlay.setPosition(coordinate);
+      // TODO: ol 高亮显示需要研究怎么反向获取sytle
       // style.setSelectedId(features[0].getId(), features[0].get('layer'));
       source.changed();
     });
