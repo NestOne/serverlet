@@ -18,6 +18,7 @@ import scala.concurrent._
 
 object RasterServer extends App with Service121 {
 
+
   val configuration = new Configuration()
   // Create a reader that will read in the indexed tiles we produced in Ingest.
   val hadoopValueReader:OverzoomingValueReader = HadoopValueReader(new Path("hdfs://bigdata1:9000/home/zhangnj/catalog"), configuration)
