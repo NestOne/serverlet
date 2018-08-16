@@ -3,8 +3,10 @@ import java.io.File
 
 import com.supermap.bdt.mapping.render.HBaseLayerRender
 import com.supermap.bdt.mapping.util.tiling.CRS
+import handler.HBaseHandler
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.{DefaultHandler, HandlerList, ResourceHandler}
+import util.Arguments
 
 object StartupHBaseLayer {
   def main(args: Array[String]): Unit = {

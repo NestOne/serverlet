@@ -1,3 +1,5 @@
+package handler
+
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 import com.supermap.bdt.mapping.render.HBaseLayerRender

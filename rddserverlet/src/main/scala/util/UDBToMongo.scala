@@ -1,15 +1,14 @@
+package util
+
 
 import java.io.{File, FilenameFilter}
-import java.nio.file.Files
 
 import com.supermap.bdt.io.mongo.{MongoConnectionInfo, MongoWriter}
-import com.supermap.bdt.io.sdx.{DSConnectionInfo, SDXReader}
 import com.supermap.bdt.io.sdx.{DSConnectionInfo, SDXReader}
 import com.supermap.data._
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.immutable
-import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
 /**

@@ -21,7 +21,7 @@ object mvtServer {
 
   def main(args:Array[String]) ={
 
-    var cr2 = new CRS(3857)
+    var cr2 = new CRS(4326)
     val d =cr2.worldExtent
     val de = Array[Double](d.getLeft, d.getBottom, d.getRight, d.getTop)
     val x =12965271.776953
@@ -54,12 +54,17 @@ object mvtServer {
       }
 
       if(info.typ == "HBase"){
-        val reader = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),crs,info.m_haspMap.get("zookeeper"))
-        reader.m_idFieldName = info.m_haspMap.get("idField")
-        reader.m_splitLayerFieldName = info.m_haspMap.get("splitField")
-        reader.m_includeInnerPoint = info.m_haspMap.get("includeInnerPoint").toBoolean
-        reader.initialize()
-        renders += reader
+        val render = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),crs,info.m_haspMap.get("zookeeper"))
+        render.m_idFieldName = info.m_haspMap.get("idField")
+        render.m_splitLayerFieldName = info.m_haspMap.get("splitField")
+        render.m_includeInnerPoint = info.m_haspMap.getOrDefault("includeInnerPoint", "false").toBoolean
+        if(info.m_haspMap.containsKey("displayFields")){
+          val displayFields = info.m_haspMap.get("displayFields")
+          val fields = displayFields.split(",").filter(!_.isEmpty)
+          render.m_displayFields = fields
+        }
+        render.initialize()
+        renders += render
       }
     }
     TileDataCache.initTileLoader(renders)
@@ -78,8 +83,8 @@ object mvtServer {
       val styleJson = Source.fromFile(styleFile,"UTF-8").mkString
       val jsonObj = new JSONObject(styleJson)
       cacheName = jsonObj.getString("name")
+      zoom = jsonObj.getDouble("zoom")
       val obj = jsonObj.get("metadata").asInstanceOf[JSONObject]
-      zoom = obj.getDouble("zoom")
       val mpCenter = obj.getJSONArray("mapcenter")
       centerX = mpCenter.getDouble(0).doubleValue()
       centerY = mpCenter.getDouble(1).doubleValue()
@@ -105,13 +110,8 @@ object mvtServer {
       //      如果没有数据位置信息，需要重schema中获取需要的数据,无法获取到现在，需要后面看看怎办
 
     }
-
-
-
     server.start()
     server.join()
-
-
   }
 
 

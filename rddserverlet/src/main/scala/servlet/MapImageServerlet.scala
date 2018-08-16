@@ -1,20 +1,11 @@
-import java.awt.{Color, Dimension}
+package servlet
+
 import java.io._
 import java.net.URLDecoder
-import java.util.ServiceLoader
-import javax.imageio.ImageIO
 import javax.servlet.ServletException
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
-import com.alibaba.fastjson.{JSON, JSONObject}
-import com.supermap.bdt.mapping.dmap.DMap
 import com.supermap.bdt.mapping.render.MapRender
-import com.supermap.data.{Point2D, Rectangle2D, Workspace, WorkspaceConnectionInfo}
-import org.apache.commons.io.FileUtils
-import org.locationtech.geomesa.hbase.data.HBaseDataStoreParams.HBaseCatalogParam
-import org.locationtech.geomesa.spark.SpatialRDDProvider
-
-import scala.collection.JavaConversions._
 
 /**
   * Created by Administrator on 2017/8/30.
@@ -76,7 +67,7 @@ class RDDHdfsServerlet(mapRender: MapRender) extends MapImageServerlet(mapRender
   }
 }
 
-//class MVTServerlet(mapRender: MapRender) extends MapImageServerlet(m_dmap){
+//class MVTServerlet(mapRender: MapRender) extends servlet.MapImageServerlet(m_dmap){
 //  override def getImage(level : Int, col : Int, row : Int):Array[Byte] ={
 //    //m_dmap.renderVector(level, col, row)
 //    val basePath = s"F:\\nanning\\nanning_3857\\DLTB_2w_Double@nanning\\tiles\\$level\\$col\\$row.mvt"
@@ -90,7 +81,6 @@ class RDDHdfsServerlet(mapRender: MapRender) extends MapImageServerlet(mapRender
 
 class StatusSeverlet extends HttpServlet {
   private val serialVersionUID: Long = 1L
-
 
   // 浏览器的url中只能是get请求，为了测试方便，这里get 和 post为同样的功能
   @throws[ServletException]

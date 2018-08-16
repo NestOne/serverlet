@@ -4,6 +4,7 @@ import com.supermap.bdt.mapping.render.MapRender
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
+import servlet.RDDHdfsServerlet
 
 object Startup {
   def main(args: Array[String]): Unit = {
@@ -24,7 +25,7 @@ object Startup {
     //context.addServlet(new ServletHolder(new RDDMapImageServerlet()), "/rddimage");
     //context.addServlet(new ServletHolder(new RDDMapImageServerlet()), "/rdd/image.png");
     //context.addServlet(new ServletHolder(new RDDHdfsStyleSeverlet()), "/style.set");
-    //context.addServlet(new ServletHolder(new StatusSeverlet()), "/status");
+    //context.addServlet(new ServletHolder(new servlet.StatusSeverlet()), "/status");
     if (args.length > 1) {
       val mapRender = new MapRender()
       mapRender.initialize(args(0), args(1))
