@@ -20,7 +20,7 @@ object DistributeServer {
 
     val sparkContext = new SparkContext(sparkConf)
 
-    val port = 8111
+    val port = if(args.isEmpty) 8013 else 8014
     val start = System.currentTimeMillis()
     val server = new Server(port);
 

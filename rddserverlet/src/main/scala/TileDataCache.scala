@@ -14,12 +14,12 @@ import scala.collection.mutable.ArrayBuffer
 
 class mvtGeomeryLoader(layerRenders: ArrayBuffer[LayerRender])
   extends com.google.common.cache.CacheLoader[String, java.util.Map[String, java.util.List[Geometry]]] {
-  val crs = new CRS(4326)
+  //val crs = new CRS(4326)
 
   override def load(target: String): java.util.Map[String, java.util.List[Geometry]] = {
     //    k为瓦片，需要根据图层分开，
     val (zoom, col, row) = TileDataCache.pathTozxy(target)
-    MVTRenderEngine.getTileGeometry(layerRenders, crs, zoom, col, row)
+    MVTRenderEngine.getTileGeometry(layerRenders, zoom, col, row)
   }
 }
 
@@ -57,7 +57,7 @@ class mvtLayerBuilder(layerRenders: ArrayBuffer[LayerRender])
       val ls = hashValues.get(sourceLayersKey)
       ls.split(',')
     } else {
-      layerRenders.map( l => l.name()).toArray
+      layerRenders.map( l => l.getName()).toArray
     }
 
     var multiThreadCount=0
@@ -151,13 +151,13 @@ object TileDataCache {
   def initTileLoader(layerRenders: ArrayBuffer[LayerRender]): Unit = {
     val loader = new mvtGeomeryLoader(layerRenders)
     g_mvtGeosCache = CacheBuilder.newBuilder()
-      .maximumSize(300)
+      .maximumSize(10)
       .expireAfterAccess(60, TimeUnit.MINUTES)
       .build(loader)
 
     val mvtBuilder = new mvtLayerBuilder(layerRenders)
     g_mvtCache = CacheBuilder.newBuilder()
-      .maximumSize(1000)
+      .maximumSize(10)
       .expireAfterAccess(60, TimeUnit.MINUTES)
       .build(mvtBuilder)
   }

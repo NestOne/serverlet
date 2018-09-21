@@ -43,7 +43,7 @@ object StartupHBaseLayer {
 
       println("start open hbase datastore")
 
-      val hBaseRender = new HBaseLayerRender(tableName, typeName, CRS(epsg.toInt), zookeeper = zookeeper)
+      val hBaseRender = new HBaseLayerRender(tableName, typeName, zookeeper = zookeeper)
       hBaseRender.initialize()
 
       println("open hbase datastore cost " + (System.currentTimeMillis() - start) + "ms")

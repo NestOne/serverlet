@@ -21,12 +21,12 @@ object mvtServer {
 
   def main(args:Array[String]) ={
 
-    var cr2 = new CRS(4326)
-    val d =cr2.worldExtent
-    val de = Array[Double](d.getLeft, d.getBottom, d.getRight, d.getTop)
-    val x =12965271.776953
-    val y = 4903304.456258
-    val newPt2 = HtmlGenerator.alterMBGLCenter(x,y,de,512)
+//    var cr2 = new CRS(4326)
+//    val d =cr2.worldExtent
+//    val de = Array[Double](d.getLeft, d.getBottom, d.getRight, d.getTop)
+//    val x =12965271.776953
+//    val y = 4903304.456258
+//    val newPt2 = HtmlGenerator.alterMBGLCenter(x,y,de,512)
     val dataJson = args(0)
     var port = 8020
     if(args.length >1){
@@ -46,15 +46,16 @@ object mvtServer {
     val dataInfos = JsonConverter.parseJson(lines,classOf[Array[java.util.HashMap[String,Object]]])
 
     val renders = new ArrayBuffer[LayerRender]()
-    var crs = new CRS(4326)
+
     for( infoHash <- dataInfos){
-      val info = new LayerRenderConfig("HBase")
+      val info = new LayerRenderConfig("")
       for( key <- infoHash.keySet().toArray){
         info.m_haspMap.put(key.toString,infoHash.get(key).toString())
       }
+      info.typ = info.m_haspMap.get("typ")
 
       if(info.typ == "HBase"){
-        val render = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),crs,info.m_haspMap.get("zookeeper"))
+        val render = new HBaseLayerRender(info.m_haspMap.get("catalog"),info.m_haspMap.get("typeName"),info.m_haspMap.get("zookeeper"))
         render.m_idFieldName = info.m_haspMap.get("idField")
         render.m_splitLayerFieldName = info.m_haspMap.get("splitField")
         render.m_includeInnerPoint = info.m_haspMap.getOrDefault("includeInnerPoint", "false").toBoolean
@@ -63,6 +64,11 @@ object mvtServer {
           val fields = displayFields.split(",").filter(!_.isEmpty)
           render.m_displayFields = fields
         }
+        render.initialize()
+        renders += render
+      }else if(info.typ == "Postgis"){
+        val render = new PostgisLayerRender(info.m_haspMap.get("url"),info.m_haspMap.get("port"),info.m_haspMap.get("dataset")
+          ,info.m_haspMap.get("user"),info.m_haspMap.get("password"),info.m_haspMap.get("tableName"))
         render.initialize()
         renders += render
       }
@@ -80,6 +86,7 @@ object mvtServer {
     val host = server.getURI.getHost
 
     if(new File(styleFile).exists()){
+      var crs = new CRS(4326)
       val styleJson = Source.fromFile(styleFile,"UTF-8").mkString
       val jsonObj = new JSONObject(styleJson)
       cacheName = jsonObj.getString("name")

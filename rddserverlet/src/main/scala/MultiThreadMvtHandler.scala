@@ -10,6 +10,7 @@ class MultiThreadMvtHandler extends AbstractHandler {
     if(!target.endsWith(".mvt")){
       return;
     }
+
     var queryString = request.getQueryString()
     var tileKey:String = ""
     if(!StringUtils.isBlank(queryString)){
@@ -18,7 +19,6 @@ class MultiThreadMvtHandler extends AbstractHandler {
     val (tileSource, zoom, col, row) = TileCache.pathToURL(target)
     tileKey = s"$zoom/$col/$row?$tileKey"
     val tile = TileDataCache.getTile(zoom,col,row,tileKey)
-
 
     if(tile != null && tile.length > 0){
       httpServletResponse.getOutputStream.write(tile)
