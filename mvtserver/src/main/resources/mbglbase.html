@@ -16,6 +16,36 @@
     <div id='map'></div>
     <script>
     <!--inserjscode-->
+
+    console.log(center);
+    var zoom=minZ;
+    var root = window.location.href;
+    root = root.substring(0,root.lastIndexOf("/")+1);
+    fetch('./styles/style.json').then(function (response) {
+        response.json().then(function (glStyle) {
+            // 修改style,sprite, glyphs为绝对路径
+            var target =  root + glStyle.sources[sourceName].tiles[0];
+            glStyle.sources[sourceName].tiles[0]=target;
+            glStyle.sprite =root +glStyle.sprite;
+            glStyle.glyphs = root+ glStyle.glyphs;
+            mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
+            var map = new mapboxgl.Map({
+                container: 'map', // container id
+                style: glStyle,
+                center:center,
+                zoom: zoom,
+                minZoom:minZ,
+                maxZoom:maxZ
+            });
+            // map.showCollisionBoxes = true;
+            // map.showTileBoundaries = true;
+            var nav = new mapboxgl.NavigationControl();
+            map.addControl(nav, 'top-left');
+            var sca = new mapboxgl.ScaleControl({maxWith:80,unit:'imperial'});
+            map.addControl(sca);
+        });
+    });
+
     </script>
 </body>
 </html>

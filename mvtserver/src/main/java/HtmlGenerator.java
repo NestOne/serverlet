@@ -11,6 +11,7 @@ import java.util.jar.JarFile;
 public class HtmlGenerator {
 
     private static String REPLACEKEY="<!--inserjscode-->";
+    private static double[] MAPBOX_INDEXBOUNDS=new double[]{-20037508.342789199,-20037508.342789199,20037508.342789199,20037508.342789199};
 
     /**
      * 将资源中的所有css, js文件保存到folder的./dist目录下
@@ -18,9 +19,25 @@ public class HtmlGenerator {
      */
     public static void saveAsJS(String folder) throws Exception {
         ClassLoader loader =HtmlGenerator.class.getClassLoader();
-        String distFolder = "dist";
+        extractFiles(folder, loader, "dist");
+        extractFiles(folder, loader, "editor");
+    }
 
+    private static void findFiles(String folder,ClassLoader loader, List<String> filenames) throws Exception{
+        BufferedReader in = new BufferedReader(new InputStreamReader(loader.getResourceAsStream(folder)));
+        String resource;
+        while( (resource = in.readLine()) != null ) {
+            String resName =folder+"/"+resource;
+            boolean dir = new File(loader.getResource(resName).toURI()).isDirectory();
+            if(!dir){
+                filenames.add(resName);
+            }else{
+                findFiles(resName,loader,filenames);
+            }
+        }
+    }
 
+    private static void extractFiles(String folder, ClassLoader loader, String distFolder) throws Exception {
         String classResourceName = HtmlGenerator.class.getName().replace(".", "/") + ".class";
         URL classResourceURL = loader.getResource(classResourceName);
         String classResourcePath = classResourceURL.getPath();
@@ -28,11 +45,8 @@ public class HtmlGenerator {
 
         if (classResourceURL.getProtocol().equals("file")) {
             // 开发环境里class和resource同位于target/classes目录下
-            BufferedReader in = new BufferedReader(new InputStreamReader(loader.getResourceAsStream(distFolder)));
-            String resource;
-            while( (resource = in.readLine()) != null ) {
-                filenames.add( distFolder+"/"+resource );
-            }
+            findFiles(distFolder,loader,filenames);
+
         } else if (classResourceURL.getProtocol().equals("jar")) {
             // 打包成jar包时,class和resource同位于jar包里
             String jarPath = classResourcePath.substring(classResourcePath.indexOf("/"), classResourceURL.getPath()
@@ -62,6 +76,9 @@ public class HtmlGenerator {
             if(!targetFile.exists()){
 
                 DataInputStream  reader = new DataInputStream(loader.getResourceAsStream(file));
+                if(!targetFile.getParentFile().exists()){
+                    targetFile.getParentFile().mkdir();
+                }
                 FileOutputStream writer = new FileOutputStream(targetFile);
                 byte[] bytes = new byte[4096];
                 int bitCount=0;
@@ -75,7 +92,6 @@ public class HtmlGenerator {
 
 
         }
-
     }
 
 
@@ -143,44 +159,42 @@ public class HtmlGenerator {
         }
 
 //        生成完ol的页面后，如果是3857, 测处理mapbox-gl页面
+//        mapboxgl 本身没有投影的概念，只是层级和坐标，可以用于直接查看任何坐标系，后面重点用于大数据配图演示
+
+
+        String mbglContent = readLines("mbglbase.html");
+        StringBuilder mbBuilder = new StringBuilder();
+
+//        重新修订mapbox gl中的中心点
+
+//        进行投影转换
+        double cellSize = (indexbounds[2] - indexbounds[0])/tileSize;
+        double pixelX = (centerX-indexbounds[0])/cellSize;
+        double pixelY= (indexbounds[3] - centerY)/cellSize;
+
+//        该像素点在3857坐标系下的坐标值
+        double mapboxCellSize = (MAPBOX_INDEXBOUNDS[2] - MAPBOX_INDEXBOUNDS[0])/tileSize;
+        double mbX=MAPBOX_INDEXBOUNDS[0] + pixelX*mapboxCellSize;
+        double mbY=MAPBOX_INDEXBOUNDS[3] - pixelY*mapboxCellSize;
+
+
+
+        mbBuilder.append(String.format("   var minZ=%d;\n",minZoom) +
+                String.format("    var maxZ=%d;\n",maxZoom) +
+                String.format("    var sourceName=\"%s\";\n",cacheName) +
+                String.format("    var center= ol.proj.toLonLat([%f, %f]);\n",mbX,mbY));
+
+        String jsLines=mbBuilder.toString();
+
+        mbglContent = mbglContent.replace(REPLACEKEY,jsLines);
+        String mbglFile = folder+"/indexmbgl.html";
+        if(!new File(mbglFile).exists()){
+            OutputStreamWriter writer  = new OutputStreamWriter(new FileOutputStream(mbglFile),"UTF-8");
+            writer.write(mbglContent);
+            writer.close();
+        }
+
         if(epsgcode == 3857){
-            String mbglContent = readLines("mbglbase.html");
-            String jsLines = "var root = window.location.href;\n" +
-                    "    root = root.substring(0,root.lastIndexOf(\"/\")+1);\n" +
-                    "\n" +
-                    "    fetch('./styles/style.json').then(function (response) {\n" +
-                    "        response.json().then(function (glStyle) {\n" +
-                    "            // 修改style,sprite, glyphs为绝对路径\n" +
-                    "            var target =  root + glStyle.sources[\""+cacheName+"\"].tiles[0];\n" +
-                    "            glStyle.sources[\""+cacheName+"\"].tiles[0]=target;\n" +
-                    "            glStyle.sprite =root +glStyle.sprite;\n" +
-                    "            glStyle.glyphs = root+ glStyle.glyphs;\n" +
-                    "            mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';\n" +
-                    "            var map = new mapboxgl.Map({\n" +
-                    "                container: 'map', // container id\n" +
-                    "                style: glStyle,\n" +
-                    "                center: ol.proj.toLonLat(["+centerX+", "+centerY+"]),\n" +
-                    "                zoom: "+minZoom+",\n" +
-                    "                minZoom:"+minZoom+",\n" +
-                    "                maxZoom:"+maxZoom+"\n" +
-                    "            });\n" +
-                    "            // map.showCollisionBoxes = true;\n" +
-                    "            // map.showTileBoundaries = true;\n" +
-                    "            var nav = new mapboxgl.NavigationControl();\n" +
-                    "            map.addControl(nav, 'top-left');\n" +
-                    "            var sca = new mapboxgl.ScaleControl({maxWith:80,unit:'imperial'});\n" +
-                    "            map.addControl(sca);\n" +
-                    "        });\n" +
-                    "    });\n";
-
-            mbglContent = mbglContent.replace(REPLACEKEY,jsLines);
-            String mbglFile = folder+"/indexmbgl.html";
-            if(!new File(mbglFile).exists()){
-                OutputStreamWriter writer  = new OutputStreamWriter(new FileOutputStream(mbglFile),"UTF-8");
-                writer.write(mbglContent);
-                writer.close();
-            }
-
 //            生成compare文件
             String compareContent = readLines("comparebase.html");
             String comparejs = "    var center = ["+centerX+", " +centerY+"];\n" +

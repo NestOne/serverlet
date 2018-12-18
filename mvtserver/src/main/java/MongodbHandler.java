@@ -42,7 +42,7 @@ public class MongodbHandler extends AbstractHandler {
             port = Integer.valueOf(subs[1]);
         }
         g_versionID = versionID;
-        g_client = new MongoClient(serverwithPort,port);
+        g_client = new MongoClient(subs[0],port);
         g_db = g_client.getDatabase(dataBaseName);
         g_tileCol = g_db.getCollection("tiles_"+cacheName);
         g_imageCol=g_db.getCollection("images_"+cacheName);
